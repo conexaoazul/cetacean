@@ -17,7 +17,7 @@ services:
       CETACEAN_PROMETHEUS_URL: ""
       # Auth: anonymous for now; configure OIDC/Tailscale later
     networks:
-      - infra_backend
+      - web_swarm
     deploy:
       placement:
         constraints:
@@ -36,7 +36,7 @@ services:
         - "traefik.http.routers.cetacean.tls.certresolver=letsencrypt"
         - "traefik.http.services.cetacean.loadbalancer.server.port=9000"
         - "traefik.http.services.cetacean.loadbalancer.server.scheme=http"
-        - "traefik.docker.network=infra_backend"
+        - "traefik.docker.network=web_swarm"
       restart_policy:
         condition: any
         delay: 30s
@@ -48,6 +48,5 @@ services:
         order: start-first
 
 networks:
-  infra_backend:
+  web_swarm:
     external: true
-    name: infra_backend

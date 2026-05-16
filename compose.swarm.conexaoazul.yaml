@@ -14,10 +14,11 @@ services:
         target: /var/run/docker.sock
         read_only: true
     environment:
-      CETACEAN_PROMETHEUS_URL: ""
+      CETACEAN_PROMETHEUS_URL: "http://prometheus:9090"
       # Auth: anonymous for now; configure OIDC/Tailscale later
     networks:
       - web_swarm
+      - monitoring
     deploy:
       placement:
         constraints:
@@ -49,4 +50,6 @@ services:
 
 networks:
   web_swarm:
+    external: true
+  monitoring:
     external: true

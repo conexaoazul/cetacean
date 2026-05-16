@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  cetacean:
+    image: ghcr.io/radiergummi/cetacean:latest
+    ports:
+      - published: 9500
+        target: 9000
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    environment:
+      CETACEAN_PROMETHEUS_URL: ""
+      # Auth: anonymous for now; configure OIDC/Tailscale later
+    networks:
+      - infra_backend
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.cetacean.rule=Host(`cetacean.conexaoazul.com`)"
+        - "traefik.http.routers.cetacean.entrypoints=websecure"
+        - "traefik.http.routers.cetacean.tls.certresolver=letsencrypt"
+        - "traefik.http.services.cetacean.loadbalancer.server.port=9000"
+        - "traefik.http.services.cetacean.loadbalancer.server.scheme=http"
+        - "traefik.docker.network=infra_backend"
+      restart_policy:
+        condition: any
+        delay: 30s
+        max_attempts: 5
+      update_config:
+        parallelism: 1
+        delay: 30s
+        failure_action: rollback
+        order: start-first
+
+networks:
+  infra_backend:
+    external: true
+    name: infra_backend
